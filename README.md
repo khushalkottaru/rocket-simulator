@@ -1,10 +1,12 @@
 # 2D Rocket Trajectory Simulator
 
-A Python script that simulates the 2D flight path of a projectile, factoring in gravity, aerodynamic drag, and wind.
+A Python script that simulates the 2D flight path of a powered rocket, factoring in gravity, aerodynamic drag, wind, thrust, and variable mass.
 
 ## Features
 -   Models forces like gravity, drag, and wind.
 -   Uses a time-step simulation to calculate the flight path.
+-   Considers when the engine is on and calculates thrust
+-   Simulates variable mass as fuel is consumed
 -   Generates a detailed plot of the trajectory using Matplotlib.
 
 ## How to Run
