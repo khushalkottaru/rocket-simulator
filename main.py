@@ -5,38 +5,46 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
 # Get settings from config file
-gravity, v_nought, angle, time_step, area, mass, drag_coefficient, rho, wind_vx = (
+gravity, launch_angle, launch_altitude, time_step, area, dry_mass, propellant_mass, fuel_consumption_rate, I_sp, drag_coefficient, rho, wind_vx = (
     config.gravity,
-    config.v_nought,
-    config.angle,
+    config.launch_angle,
+    config.launch_altitude,
     config.time_step,
     config.area,
-    config.mass,
+    config.dry_mass,
+    config.propellant_mass,
+    config.fuel_consumption_rate,
+    config.I_sp,
     config.drag_coefficient,
     config.rho,
     config.wind_vx,
 )
 
-angle_rad = math.radians(angle) # Convert angle to radians
+angle_rad = math.radians(launch_angle)  # Convert angle to radians
 
-# Find the components of v_o
-v_x = v_nought * math.cos(angle_rad)
-v_y = v_nought * math.sin(angle_rad)
+# Rocket starts with 0 velocity at the launchpad
+v_x = 0
+v_y = 0
 
 # Initialize rocket's position
 x = 0
-y = 0
+y = 0 + launch_altitude
 t = 0
 
 # Lists to store rocket's position data
 x_coords = []
 y_coords = []
 
-while y >= 0: # Condition: rocket is on or above ground
+# Find the total possible runtime of the engine
+burn_time = propellant_mass / fuel_consumption_rate
+
+# Find the exhaust velocity of the engine
+v_ex = I_sp * 9.80665
+
+while y >= 0:  # Condition: rocket is on or above ground
     x_coords.append(x)
     y_coords.append(y)
 
-    
     # Relative Velocity
     v_rel_x = v_x - wind_vx
     v_rel_y = v_y - 0
@@ -52,13 +60,27 @@ while y >= 0: # Condition: rocket is on or above ground
     else:
         drag_x, drag_y = 0
 
+# Mass & Thrust
+    if t < burn_time:
+        f_thrust = v_ex * fuel_consumption_rate
+        f_thrust_x = f_thrust * math.cos(angle_rad)
+        f_thrust_y = f_thrust * math.sin(angle_rad)
+
+        propellant_mass = propellant_mass - fuel_consumption_rate * time_step
+        total_mass = propellant_mass + dry_mass
+
+    else:
+        f_thrust, f_thrust_x, f_thrust_y = 0, 0, 0
+        propellant_mass = 0
+        total_mass = dry_mass
+
     # Forces
-    net_force_y = -mass * gravity + drag_y
-    net_force_x = 0.0 + drag_x
+    net_force_x = f_thrust_x + 0.0 + drag_x
+    net_force_y = f_thrust_y - (total_mass * gravity) + drag_y
 
     # Acceleration
-    acceleration_x = net_force_x/mass
-    acceleration_y = net_force_y/mass
+    acceleration_x = net_force_x/total_mass
+    acceleration_y = net_force_y/total_mass
 
     # Update Velocity
     v_x = v_x + acceleration_x * time_step
@@ -74,7 +96,7 @@ while y >= 0: # Condition: rocket is on or above ground
 plt.plot(x_coords, y_coords)
 
 # Labels
-plt.title("Ballistic Rocket Trajectory")
+plt.title("Powered Rocket Trajectory")
 plt.xlabel("Distance (m)")
 plt.ylabel("Altitude (m)")
 
@@ -92,24 +114,25 @@ if len(x_coords) > 1:
     apogee_y = max(y_coords)
     apogee_index = y_coords.index(apogee_y)
     apogee_x = x_coords[apogee_index]
-    plt.text(apogee_x, apogee_y, f' Apogee: {apogee_y:.2f} m', va='bottom', ha='center')
+    plt.text(apogee_x, apogee_y,
+             f' Apogee: {apogee_y:.2f} m', va='bottom', ha='center')
 
     # Mark the launch & impact points
     plt.scatter(x_coords[0], y_coords[0], color='green', s=100, label='Launch')
     plt.scatter(x_coords[-1], y_coords[-1], color='red', s=100, label='Impact')
 
     # Label the launch angle
-    ax = plt.gca() # Get current axes
+    ax = plt.gca()  # Get current axes
 
     # Create an arc patch
-    arc_radius = max(x_coords) * 0.05 
+    arc_radius = max(x_coords) * 0.05
     launch_arc = patches.Arc(
-        (0, 0), # Center of the arc
-        width=arc_radius*2, # Width of the arc's ellipse
-        height=arc_radius*2, # Height of the arc's ellipse
-        angle=0, # Rotation of the arc's ellipse
-        theta1=0, # Start angle of the arc
-        theta2=angle, # End angle of the arc
+        (x_coords[0], y_coords[0]),  # Center of the arc
+        width=arc_radius*2,  # Width of the arc's ellipse
+        height=arc_radius*2,  # Height of the arc's ellipse
+        angle=0,  # Rotation of the arc's ellipse
+        theta1=0,  # Start angle of the arc
+        theta2=launch_angle,  # End angle of the arc
         color='blue',
         linewidth=2,
         linestyle='--'
@@ -119,7 +142,8 @@ if len(x_coords) > 1:
     ax.add_patch(launch_arc)
 
     # Add a text label for the angle
-    plt.text(arc_radius * 1.1, arc_radius * 0.4, f'{angle}°')
+    plt.text(arc_radius * 1.1, launch_altitude +
+             arc_radius * 0.4, f'{launch_angle}°')
 
 
 # Scaling
