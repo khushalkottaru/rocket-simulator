@@ -3,6 +3,7 @@ import math
 import config
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
+from matplotlib.animation import FuncAnimation
 
 # Get settings from config file
 gravity, launch_angle, launch_altitude, time_step, area, dry_mass, propellant_mass, fuel_consumption_rate, I_sp, drag_coefficient, rho, wind_vx = (
@@ -93,22 +94,72 @@ while y >= 0:  # Condition: rocket is on or above ground
     # Time Step
     t = t + time_step
 
-plt.plot(x_coords, y_coords)
+# Set a style for later
+plt.style.use('dark_background')
+NEON_COLOR = 'cyan'
+
+# Initiate plot
+fig, ax = plt.subplots()
 
 # Labels
-plt.title("Powered Rocket Trajectory")
-plt.xlabel("Distance (m)")
-plt.ylabel("Altitude (m)")
+ax.set_title("Powered Rocket Trajectory")
+ax.set_xlabel("Distance (m)")
+ax.set_ylabel("Altitude (m)")
+
+# Set limits w/ padding
+ax.set_xlim(0, max(x_coords) * 1.1)
+ax.set_ylim(0, max(y_coords) * 1.1)
+
+# Animation objects (three for a neon effect)
+line_glow, = ax.plot([], [], color=NEON_COLOR, linewidth=5, alpha=0.3)
+line_main, = ax.plot([], [], color=NEON_COLOR, linewidth=2, alpha=0.7)
+line_core, = ax.plot([], [], color=NEON_COLOR, linewidth=1, alpha=1.0)
+
+# Arrow Properties
+arrowprops = dict(
+    facecolor=NEON_COLOR,
+    edgecolor=NEON_COLOR,
+    shrink=0.05,
+    width=1,
+    headwidth=8
+)
+# Create the single arrow object, initially invisible at (0,0)
+arrow = ax.annotate(
+    '',
+    xy=(0, 0),
+    xytext=(0, 0),
+    arrowprops=arrowprops,
+)
+
+# Function to update the graph for the animation to play out
+
+
+def update(frame):
+
+    # Set data for all three lines
+    line_glow.set_data(x_coords[:frame], y_coords[:frame])
+    line_main.set_data(x_coords[:frame], y_coords[:frame])
+    line_core.set_data(x_coords[:frame], y_coords[:frame])
+
+    # Arrow
+    if frame > 0:
+        # Get the new tip and tail coordinates
+        tip_x = x_coords[frame]
+        tip_y = y_coords[frame]
+        tail_x = x_coords[frame - 1]  # One frame behind
+        tail_y = y_coords[frame - 1]  # One frame behind
+
+        # Set the arrow's new positions
+        arrow.xy = (tip_x, tip_y)
+        arrow.set_position((tail_x, tail_y))
+
+
+# The actual animation
+anim = FuncAnimation(fig, update, frames=len(x_coords),
+                     interval=7.5, blit=False, repeat=False)
 
 # Check if flight is long enough for graph features
 if len(x_coords) > 1:
-
-    # Arrow
-    plt.annotate(
-        '', xy=(x_coords[-1], y_coords[-1]),
-        xytext=(x_coords[-2], y_coords[-2]),
-        arrowprops=dict(facecolor='black', shrink=0.05, width=1, headwidth=8)
-    )
 
     # Highlight the maximum (apogee) point
     apogee_y = max(y_coords)
@@ -133,7 +184,7 @@ if len(x_coords) > 1:
         angle=0,  # Rotation of the arc's ellipse
         theta1=0,  # Start angle of the arc
         theta2=launch_angle,  # End angle of the arc
-        color='blue',
+        color='orange',
         linewidth=2,
         linestyle='--'
     )
@@ -146,8 +197,7 @@ if len(x_coords) > 1:
              arc_radius * 0.4, f'{launch_angle}°')
 
 
-# Scaling
-plt.axis('equal')
-plt.grid(True)
+# Add a grid
+ax.grid(True)
 
 plt.show()

@@ -6,7 +6,7 @@
 gravity = 9.81  # m/s^2
 time_step = 0.1  # Interval between calculations (s)
 rho = 1.225  # Air density (kg/m^3)
-wind_vx = 60.3  # (m/s), (+) indicates tailwind & (-) indicates headwind
+wind_vx = -50  # (m/s), (+) indicates tailwind & (-) indicates headwind
 
 # Launch
 launch_angle = 45  # Angle at which rocket is launched (deg.)
