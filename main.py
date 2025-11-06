@@ -4,10 +4,15 @@ import config
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib.animation import FuncAnimation
+from ISA_model import get_atmosphere
+
+# Earth attributes
+G_EARTH = 6.67430e-11        # Gravitational constant (N·m^2/kg^2)
+M_EARTH = 5.97219e24         # Mass of Earth (kg)
+R_EARTH = 6371000            # Average radius of Earth (m)
 
 # Get settings from config file
-gravity, launch_angle, launch_altitude, time_step, area, dry_mass, propellant_mass, fuel_consumption_rate, I_sp, drag_coefficient, rho, wind_vx = (
-    config.gravity,
+launch_angle, launch_altitude, time_step, area, dry_mass, propellant_mass, fuel_consumption_rate, I_sp, drag_coefficient, wind_vx = (
     config.launch_angle,
     config.launch_altitude,
     config.time_step,
@@ -17,7 +22,6 @@ gravity, launch_angle, launch_altitude, time_step, area, dry_mass, propellant_ma
     config.fuel_consumption_rate,
     config.I_sp,
     config.drag_coefficient,
-    config.rho,
     config.wind_vx,
 )
 
@@ -52,6 +56,12 @@ while y >= 0:  # Condition: rocket is on or above ground
 
     # Speed
     mag_rel_v = math.sqrt(v_rel_x**2 + v_rel_y**2)
+
+    # International Standard Atmosphere (ISA) model
+    temperature, pressure, rho = get_atmosphere(y)
+
+    # Variable gravity
+    gravity = (G_EARTH * M_EARTH) / (R_EARTH + y)**2
 
     # Drag
     if mag_rel_v > 0:
