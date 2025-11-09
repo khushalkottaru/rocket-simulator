@@ -15,4 +15,6 @@ def get_atmosphere(altitude):
 
     rho = pressure / (0.2869 * (temperature + 273.1))
 
+    temperature += 273.15   # Convert temperature to Kelvins from Celsius
+
     return temperature, pressure, rho

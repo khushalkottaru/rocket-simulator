@@ -1,18 +1,34 @@
 '''Main file for running the application.'''
 import math
 import config
+import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib.animation import FuncAnimation
 from ISA_model import get_atmosphere
+
+# Constant Attributes:
 
 # Earth attributes
 G_EARTH = 6.67430e-11        # Gravitational constant (N·m^2/kg^2)
 M_EARTH = 5.97219e24         # Mass of Earth (kg)
 R_EARTH = 6371000            # Average radius of Earth (m)
 
+# Atmosphere Attributes
+GAMMA = 1.4                  # Heat capacity ratio for air
+R = 287.058                  # Specific gas constant for air (J/(kg*K))
+
+# Drag Coefficient Lookup table
+MACH_DATA = [
+    0.0, 0.5, 0.7, 0.9, 1.0, 1.1, 1.2, 1.5, 2.0, 3.0, 4.0, 5.0
+]
+DC_DATA = [
+    0.28, 0.27, 0.29, 0.38, 0.60, 0.58, 0.55, 0.47, 0.41, 0.35, 0.32, 0.30
+]
+
+
 # Get settings from config file
-launch_angle, launch_altitude, time_step, area, dry_mass, propellant_mass, fuel_consumption_rate, I_sp, drag_coefficient, wind_vx = (
+launch_angle, launch_altitude, time_step, area, dry_mass, propellant_mass, fuel_consumption_rate, I_sp, wind_vx = (
     config.launch_angle,
     config.launch_altitude,
     config.time_step,
@@ -21,7 +37,6 @@ launch_angle, launch_altitude, time_step, area, dry_mass, propellant_mass, fuel_
     config.propellant_mass,
     config.fuel_consumption_rate,
     config.I_sp,
-    config.drag_coefficient,
     config.wind_vx,
 )
 
@@ -62,6 +77,11 @@ while y >= 0:  # Condition: rocket is on or above ground
 
     # Variable gravity
     gravity = (G_EARTH * M_EARTH) / (R_EARTH + y)**2
+
+    # Variable Drag Coefficient
+    speed_of_sound = math.sqrt(GAMMA * R * temperature)
+    mach_number = mag_rel_v / speed_of_sound
+    drag_coefficient = np.interp(mach_number, MACH_DATA, DC_DATA)
 
     # Drag
     if mag_rel_v > 0:

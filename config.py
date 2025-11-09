@@ -18,4 +18,5 @@ dry_mass = 50  # kg
 propellant_mass = 75  # kg
 fuel_consumption_rate = 5.0  # kg/s, assuming max thrust whenever engine is on
 I_sp = 250  # Specific impulse (s)
-drag_coefficient = 0.5  # Dimensionless
+
+# Automatically calculate: Air density (rho), gravity, drag coefficient
