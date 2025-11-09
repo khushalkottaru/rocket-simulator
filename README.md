@@ -8,6 +8,7 @@ A Python script that simulates the 2D flight path of a powered rocket, factoring
 -   Considers when the engine is on and calculates thrust
 -   Simulates variable mass as fuel is consumed
 -   Calculates gravity at each time step
+-   Finds the drag coefficient based on mach number at each time step
 -   Finds air density, temperature, and pressure at each altitude
 -   Generates a detailed plot of the trajectory using Matplotlib.
 
