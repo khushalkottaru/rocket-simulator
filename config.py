@@ -4,12 +4,15 @@
 
 # Environment
 time_step = 0.1  # Interval between calculations (s)
-wind_vx = -10  # (m/s), (+) indicates tailwind & (-) indicates headwind
+wind_speed = 10  # (m/s)
+# Direction wind is coming FROM (degrees). 0 = North, 90 = East.
+wind_direction = 0
 
 # Note: air density & gravity will be calculated automatically @ different altitudes
 
 # Launch
-launch_angle = 45  # Angle at which rocket is launched (deg.)
+launch_pitch = 45  # Angle of elevation (deg). 90 = vertical.
+launch_azimuth = 0  # Compass heading (deg). 0 = North, 90 = East.
 launch_altitude = 0  # Height of launch (m)
 
 # Rocket
